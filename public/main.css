@@ -1,0 +1,48 @@
+body {
+    background-color: black;
+}
+
+#inventory {
+    white-space: nowrap; /*Prevents Wrapping*/
+    height: 140px;
+    overflow-x: scroll;
+    overflow-y: hidden;
+}
+
+.star {
+    display: inline-block; /*Display inline and maintain block characteristics.*/
+    vertical-align: top; /*Makes sure all the divs are correctly aligned.*/
+    white-space: normal; /*Prevents child elements from inheriting nowrap.*/
+    position: relative;
+    
+    width: 100px;
+    height: 100px;
+    border: 1px solid white;
+    margin: 5px;
+}
+
+.star img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* delete button over img in .star */
+.star .deletebutton {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.star:first-child {
+    margin-left: 10px;
+}
+
+::-webkit-scrollbar {
+    color: black;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: gray;
+}
