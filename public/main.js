@@ -1,8 +1,12 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
 const minussize = 200;
 
-const renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true });
+const renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true, antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight - minussize);
-document.body.appendChild(renderer.domElement);
+document.getElementById('renderer').appendChild(renderer.domElement);
 //renderer.shadowMap.enabled = true;
 //renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
 
@@ -31,8 +35,8 @@ function onWindowResize() {
 }
 
 // Setup Lights
-[[50, 50, 50], [50, 50, -50], [-50, 50, 50], [-50, 50, -50]].forEach(coords => {
-    const light = new THREE.PointLight(0xffffff, 3, 100);
+[[5, 5, 5], [5, 5, -5], [-5, 5, 5], [-5, 5, -5]].forEach(coords => {
+    const light = new THREE.PointLight(0xffffff, 1);
     light.position.set(...coords);
 
     light.castShadow = false; // default false
@@ -44,7 +48,7 @@ function onWindowResize() {
     scene.add(light);
 })
 
-const loader = new THREE.GLTFLoader();
+const loader = new GLTFLoader();
 loader.load('stern.glb', function (gltf) {
     console.log('loaded')
     gltf.scene.children.forEach((child) => {
@@ -57,7 +61,7 @@ loader.load('stern.glb', function (gltf) {
     const model = gltf.scene;
     scene.add(model);
 
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
     controls.autoRotate = true;
     controls.enableDamping = true;
 
@@ -203,7 +207,7 @@ loader.load('stern.glb', function (gltf) {
         controls.update();
         findHoveredChildren();
         renderer.render(scene, camera);
-    };
+    }
     animate();
 
     function updateInventory() {

@@ -9,23 +9,28 @@
             margin: 0;
         }
     </style>
-    <script src='https://unpkg.com/three@0.127.0/build/three.js'></script>
-
     <!-- This brings in the ability to load custom 3D objects in the .gltf file format. Blender allows the ability to export to this format out the box -->
-    <script src='https://cdn.jsdelivr.net/gh/mrdoob/three.js@r92/examples/js/loaders/GLTFLoader.js'></script>
 
     <!-- This is a simple to use extension for three.js that activates all the rotating, dragging and zooming controls we need for both mouse and touch, there isn't a clear CDN for this that I can find -->
-    <script src='https://threejs.org/examples/js/controls/OrbitControls.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.17"></script>
 
     <link rel="stylesheet" href="main.css">
+    <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.148.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.148.0/examples/jsm/"
+        }
+      }
+    </script>
+    
 </head>
 
 <body>
-    <script src="main.js"></script>
-
-    <div id="inventory">
-    </div>
+    <script type="module" src="main.js"></script>
+    <div id="renderer"></div>
+    <div id="inventory"></div>
 </body>
 
 </html>
