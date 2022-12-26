@@ -84,7 +84,7 @@ loader.load('stern.glb', function (gltf) {
 
             // calculate objects intersecting the picking ray
             var intersects = raycaster.intersectObjects(model.children);
-            updateColors()
+            drawColors()
             advanced.children.forEach((child) => {
                 child.domElement.style.backgroundColor = '';
             });
@@ -171,7 +171,11 @@ loader.load('stern.glb', function (gltf) {
             ['top', 'bottom', 'topbackleft', 'bottombackleft', 'topbackright', 'bottombackright', 'right', 'left', 'back', 'front', 'topfrontleft', 'bottomfrontleft', 'topfrontright', 'bottomfrontright'],
             ['topright', 'bottomright', 'topleft', 'bottomleft', 'topback', 'bottomback', 'topfront', 'bottomfront', 'backleft', 'backright', 'frontleft', 'frontright'],
         ],
-
+        3: [
+            ['top', 'bottom', 'left', 'right', 'back', 'front'],
+            ['topright', 'bottomright', 'topleft', 'bottomleft', 'topback', 'bottomback', 'topfront', 'bottomfront', 'backleft', 'backright', 'frontleft', 'frontright'],
+            ['topfrontleft', 'bottomfrontleft', 'topfrontright', 'bottomfrontright', 'topbackleft', 'bottombackleft', 'topbackright', 'bottombackright']
+        ]
 
     }
 
@@ -187,6 +191,12 @@ loader.load('stern.glb', function (gltf) {
             });
         } else if (colorlist.length === 2) {
             coloringrules[2].forEach((rule, index) => {
+                rule.forEach((part) => {
+                    params.advanced[part] = colorlist[index];
+                });
+            });
+        } else if (colorlist.length === 3) {
+            coloringrules[3].forEach((rule, index) => {
                 rule.forEach((part) => {
                     params.advanced[part] = colorlist[index];
                 });
@@ -242,7 +252,7 @@ loader.load('stern.glb', function (gltf) {
                             params[entry[0]] = entry[1];
                         }
                     });
-                    updateColors();
+                    drawColors();
                 };
                 div.style.borderColor = star.wishlist ? 'red' : 'white';
                 div.appendChild(img);
