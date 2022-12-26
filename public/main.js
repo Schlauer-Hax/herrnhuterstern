@@ -111,19 +111,19 @@ loader.load('stern.glb', function (gltf) {
 
     const coloroptions = {
         'No Color': '',
-        Red: '#ff0000',
-        Blue: '#0000ff',
-        Green: '#00ff00',
-        Yellow: '#ffff00',
-        White: '#ffffff',
-        'Purple 2015': '#A020F0',
-        'Orange 2016': '#ff8000',
-        'Cyan 2017': '#00ffff',
+        Rot: '#ff0000',
+        Blau: '#006fff',
+        Grün: '#00ff00',
+        Gelb: '#ffcc00',
+        Weiß: '#ffffff',
+        'Violett 2015': '#A020F0',
+        'Orange 2016': '#ff3800',
+        'Türkis 2017': '#00ffff',
         'Magenta 2018': '#ff00ff',
-        'Lemon 2019': '#ffff00',
+        'Limone 2019': '#ddff00',
         'Mint 2020': '#00ff80',
         'Rosa 2021': '#ff0080',
-        'Silver 2022': '#c0c0c0',
+        'Silber 2022': '#cecfd2',
         'Gold': '#ffd700',
     }
 
@@ -155,14 +155,14 @@ loader.load('stern.glb', function (gltf) {
     }, 'save')
     gui.add(params, 'finder').name('Finder (toggle with F)').listen();
     gui.add(params, 'wishlist').name('Wishlist').listen();
-    gui.add(params, 'color1', coloroptions).listen().onChange(() => updateColors())
-    gui.add(params, 'color2', coloroptions).listen().onChange(() => updateColors())
-    gui.add(params, 'color3', coloroptions).listen().onChange(() => updateColors())
+    gui.add(params, 'color1', Object.keys(coloroptions)).listen().onChange(() => updateColors())
+    gui.add(params, 'color2', Object.keys(coloroptions)).listen().onChange(() => updateColors())
+    gui.add(params, 'color3', Object.keys(coloroptions)).listen().onChange(() => updateColors())
     const advanced = gui.addFolder('Advanced', {
         collapsed: true
     });
     model.children.forEach(child => {
-        advanced.add(params.advanced, child.name, coloroptions).listen().onChange((_) => drawColors());
+        advanced.add(params.advanced, child.name, Object.keys(coloroptions)).listen().onChange((_) => drawColors());
     });
     advanced.close();
 
@@ -207,7 +207,7 @@ loader.load('stern.glb', function (gltf) {
 
     function drawColors() {
         model.children.forEach((child) => {
-            child.material.color = new THREE.Color(params.advanced[child.name]);
+            child.material.color = new THREE.Color(coloroptions[params.advanced[child.name]]);
         });
     }
 
