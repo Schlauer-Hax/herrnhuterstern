@@ -1,5 +1,5 @@
 import { Application, Router, send } from "https://deno.land/x/oak@v11.1.0/mod.ts";
-import * as base64 from 'https://deno.land/x/base64/mod.ts'
+import * as base64 from "https://deno.land/x/base64@v0.2.1/mod.ts"
 
 
 const app = new Application();
@@ -77,7 +77,7 @@ router.get('/api/:id', async (context) => {
 
 function prepareData(data: any[]) {
     return data.map((item: any) => {
-        item.img = `http://localhost:8000/api/${item.id}`;
+        item.img = `/api/${item.id}`;
         return item;
     })
 }
