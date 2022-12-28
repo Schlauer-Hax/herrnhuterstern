@@ -253,6 +253,7 @@ loader.load('stern.glb', function (gltf) {
             });
             div.appendChild(backwardbutton);
             const img = document.createElement('img');
+            img.loading = 'lazy';
             img.src = star.img;
             div.onclick = () => {
                 Object.entries(star).forEach((entry) => {
