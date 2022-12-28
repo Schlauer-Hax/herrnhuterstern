@@ -38,6 +38,29 @@ router.delete("/api/:id", async (context) => {
     context.response.body = filtered;
 })
 
+router.patch("/api/:id/:direction", async (context) => {
+    const id = context.params.id;
+    const direction = context.params.direction;
+    const data = await Deno.readTextFile("data.json").catch((err) => {
+        console.log(err);
+        return "[]"
+    });
+    const json: any[] = JSON.parse(data);
+    const filtered = json.filter((item: any) => item.id != id);
+    const item = json.find((item: any) => item.id == id);
+    if (direction == "forward") {
+        if (json.indexOf(item) == 0) {
+            filtered.splice(json.indexOf(item), 0, item);
+        } else {
+            filtered.splice(json.indexOf(item) - 1, 0, item);
+        }
+    } else if (direction == "backward") {
+        filtered.splice(json.indexOf(item) + 1, 0, item);
+    }
+    await Deno.writeTextFile("data.json", JSON.stringify(filtered));
+    context.response.body = filtered;
+})
+
 app.use(router.routes());
 app.use(router.allowedMethods());
 

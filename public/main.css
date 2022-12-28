@@ -35,6 +35,18 @@ body {
     right: 0;
 }
 
+.star .forwardbutton {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+.star .backwardbutton {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
 .star:first-child {
     margin-left: 10px;
 }

@@ -12,7 +12,7 @@ document.getElementById('renderer').appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight - minussize), 0.1, 1000);
-camera.position.set(0, 3, 3);
+camera.position.set(0, 3, 40);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 const raycaster = new THREE.Raycaster();
@@ -65,7 +65,6 @@ loader.load('stern.glb', function (gltf) {
     controls.autoRotate = true;
     controls.enableDamping = true;
 
-    camera.position.z = 40;
     console.log(camera.position);
 
     // on f press
@@ -153,6 +152,7 @@ loader.load('stern.glb', function (gltf) {
             });
         }
     }, 'save')
+    gui.add({ reset: () => controls.reset() }, 'reset')
     gui.add(params, 'finder').name('Finder (toggle with F)').listen();
     gui.add(params, 'wishlist').name('Wishlist').listen();
     gui.add(params, 'color1', Object.keys(coloroptions)).listen().onChange(() => updateColors())
@@ -218,8 +218,11 @@ loader.load('stern.glb', function (gltf) {
             div.className = 'star';
             const button = document.createElement('button');
             button.className = 'deletebutton';
-            button.innerText = 'delete';
+            button.innerText = 'X';
             button.addEventListener('click', () => {
+                if (!confirm('Are you sure you want to delete this star?')) {
+                    return;
+                }
                 fetch('/api/' + star.id, {
                     method: 'DELETE'
                 }).then(async (res) => {
@@ -227,6 +230,28 @@ loader.load('stern.glb', function (gltf) {
                 });
             });
             div.appendChild(button);
+            const forwardbutton = document.createElement('button');
+            forwardbutton.className = 'forwardbutton';
+            forwardbutton.innerText = '>';
+            forwardbutton.addEventListener('click', () => {
+                fetch('/api/' + star.id+'/forward', {
+                    method: 'PATCH'
+                }).then(async (res) => {
+                    loadStars(await res.json());
+                });
+            });
+            div.appendChild(forwardbutton);
+            const backwardbutton = document.createElement('button');
+            backwardbutton.className = 'backwardbutton';
+            backwardbutton.innerText = '<';
+            backwardbutton.addEventListener('click', () => {
+                fetch('/api/' + star.id+'/backward', {
+                    method: 'PATCH'
+                }).then(async (res) => {
+                    loadStars(await res.json());
+                });
+            });
+            div.appendChild(backwardbutton);
             const img = document.createElement('img');
             img.src = star.img;
             div.onclick = () => {
