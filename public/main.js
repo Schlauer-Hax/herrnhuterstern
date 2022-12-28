@@ -146,9 +146,10 @@ loader.load('stern.glb', function (gltf) {
                 headers: {
                     'Content-Type': 'application/json'
                 }
-            }).then(async (res) => {
+            }).then((res) => res.json()).then(json => {
                 camera.position.set(camerapos.x, camerapos.y, camerapos.z);
-                loadStars(await res.json())
+                const inventory = document.getElementById('inventory');
+                inventory.insertBefore(addStar(json, inventory), inventory.firstChild);
             });
         }
     }, 'save')
@@ -212,67 +213,75 @@ loader.load('stern.glb', function (gltf) {
 
     function loadStars(stars) {
         stars.reverse();
-        document.getElementById('inventory').innerHTML = '';
+        const inventory = document.getElementById('inventory');
+        inventory.innerHTML = '';
         stars.forEach((star) => {
-            const div = document.createElement('div');
-            div.className = 'star';
-            const button = document.createElement('button');
-            button.className = 'deletebutton';
-            button.innerText = 'X';
-            button.addEventListener('click', () => {
-                if (!confirm('Are you sure you want to delete this star?')) {
-                    return;
-                }
-                fetch('/api/' + star.id, {
-                    method: 'DELETE'
-                }).then(async (res) => {
-                    loadStars(await res.json());
-                });
-            });
-            div.appendChild(button);
-            const forwardbutton = document.createElement('button');
-            forwardbutton.className = 'forwardbutton';
-            forwardbutton.innerText = '>';
-            forwardbutton.addEventListener('click', () => {
-                fetch('/api/' + star.id+'/forward', {
-                    method: 'PATCH'
-                }).then(async (res) => {
-                    loadStars(await res.json());
-                });
-            });
-            div.appendChild(forwardbutton);
-            const backwardbutton = document.createElement('button');
-            backwardbutton.className = 'backwardbutton';
-            backwardbutton.innerText = '<';
-            backwardbutton.addEventListener('click', () => {
-                fetch('/api/' + star.id+'/backward', {
-                    method: 'PATCH'
-                }).then(async (res) => {
-                    loadStars(await res.json());
-                });
-            });
-            div.appendChild(backwardbutton);
-            const img = document.createElement('img');
-            img.loading = 'lazy';
-            img.src = star.img;
-            div.onclick = () => {
-                Object.entries(star).forEach((entry) => {
-                    if (entry[0] === 'img') return;
-                    if (entry[0] === 'finder') return;
-                    if (entry[0] === 'advanced') {
-                        Object.entries(entry[1]).forEach((advancedentry) => {
-                            params.advanced[advancedentry[0]] = advancedentry[1];
-                        });
-                    } else {
-                        params[entry[0]] = entry[1];
-                    }
-                });
-                drawColors();
-            };
-            div.style.borderColor = star.wishlist ? 'red' : 'white';
-            div.appendChild(img);
-            document.getElementById('inventory').appendChild(div);
+            inventory.appendChild(addStar(star, inventory));
         });
+    }
+
+    function addStar(star, inventory) {
+        const div = document.createElement('div');
+        div.className = 'star';
+        const button = document.createElement('button');
+        button.className = 'deletebutton';
+        button.innerText = 'X';
+        button.addEventListener('click', () => {
+            if (!confirm('Are you sure you want to delete this star?')) {
+                return;
+            }
+            inventory.removeChild(div);
+            fetch('/api/' + star.id, {
+                method: 'DELETE'
+            })
+        });
+        div.appendChild(button);
+        const forwardbutton = document.createElement('button');
+        forwardbutton.className = 'forwardbutton';
+        forwardbutton.innerText = '>';
+        forwardbutton.addEventListener('click', () => {
+            const index = Array.from(inventory.children).indexOf(div);
+            const referenceNode = Array.from(inventory.children)[index + 1];
+            inventory.removeChild(div);
+            referenceNode.parentNode.insertBefore(div, referenceNode.nextSibling);
+            fetch('/api/' + star.id + '/forward', {
+                method: 'PATCH'
+            })
+        });
+        div.appendChild(forwardbutton);
+        const backwardbutton = document.createElement('button');
+        backwardbutton.className = 'backwardbutton';
+        backwardbutton.innerText = '<';
+        backwardbutton.addEventListener('click', () => {
+            const index = Array.from(inventory.children).indexOf(div);
+            const referenceNode = Array.from(inventory.children)[index - 1];
+            inventory.removeChild(div);
+            referenceNode.parentNode.insertBefore(div, referenceNode);
+            fetch('/api/' + star.id + '/backward', {
+                method: 'PATCH'
+            })
+        });
+        div.appendChild(backwardbutton);
+        const img = document.createElement('img');
+        img.loading = 'lazy';
+        img.src = star.img;
+        div.onclick = () => {
+            Object.entries(star).forEach((entry) => {
+                if (entry[0] === 'img') return;
+                if (entry[0] === 'finder') return;
+                if (entry[0] === 'advanced') {
+                    Object.entries(entry[1]).forEach((advancedentry) => {
+                        params.advanced[advancedentry[0]] = advancedentry[1];
+                    });
+                } else {
+                    params[entry[0]] = entry[1];
+                }
+            });
+            drawColors();
+        };
+        div.style.borderColor = star.wishlist ? 'red' : 'white';
+        div.appendChild(img);
+        return div;
     }
     fetch('/api').then(res => res.json()).then(stars => {
         loadStars(stars);

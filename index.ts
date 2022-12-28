@@ -25,7 +25,7 @@ router.post("/api", async (context) => {
     reqdata.id = Math.floor(Math.random() * 1000000);
     json.push(reqdata);
     await Deno.writeTextFile("data.json", JSON.stringify(json));
-    context.response.body = prepareData(json);
+    context.response.body = prepareData([reqdata])[0];
 })
 
 router.delete("/api/:id", async (context) => {
@@ -37,7 +37,7 @@ router.delete("/api/:id", async (context) => {
     const json = JSON.parse(data);
     const filtered = json.filter((item: any) => item.id != id);
     await Deno.writeTextFile("data.json", JSON.stringify(filtered));
-    context.response.body = prepareData(filtered);
+    context.response.body = 'ok';
 })
 
 router.patch("/api/:id/:direction", async (context) => {
@@ -60,7 +60,7 @@ router.patch("/api/:id/:direction", async (context) => {
         filtered.splice(json.indexOf(item) + 1, 0, item);
     }
     await Deno.writeTextFile("data.json", JSON.stringify(filtered));
-    context.response.body = prepareData(filtered);
+    context.response.body = 'ok';
 })
 
 router.get('/api/:id', async (context) => {
