@@ -1,6 +1,6 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import * as THREE from './libs/three.js';
+import { OrbitControls } from './libs/three-orbitcontrols.js';
+import { GLTFLoader } from './libs/three-gltfloader.js';
 
 const minussize = 200;
 
@@ -15,8 +15,8 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.inner
 camera.position.set(0, 3, 3);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-var raycaster = new THREE.Raycaster();
-var mouse = new THREE.Vector2(-1, -1);
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2(-1, -1);
 
 // Mouse event for finder
 function onMouseMove(event) {
@@ -83,7 +83,7 @@ loader.load('stern.glb', function (gltf) {
             raycaster.setFromCamera(mouse, camera);
 
             // calculate objects intersecting the picking ray
-            var intersects = raycaster.intersectObjects(model.children);
+            const intersects = raycaster.intersectObjects(model.children);
             drawColors()
             advanced.children.forEach((child) => {
                 child.domElement.style.backgroundColor = '';
@@ -96,17 +96,17 @@ loader.load('stern.glb', function (gltf) {
         }
     }
 
-    let params = {
+    const params = {
         finder: false,
         wishlist: false,
-        color1: '',
-        color2: '',
-        color3: '',
+        color1: 'No Color',
+        color2: 'No Color',
+        color3: 'No Color',
         advanced: {},
     };
 
     model.children.forEach((child, index) => {
-        params.advanced[child.name] = '';
+        params.advanced[child.name] = 'No Color';
     });
 
     const coloroptions = {
@@ -147,9 +147,9 @@ loader.load('stern.glb', function (gltf) {
                 headers: {
                     'Content-Type': 'application/json'
                 }
-            }).then((res) => {
+            }).then(async (res) => {
                 camera.position.set(camerapos.x, camerapos.y, camerapos.z);
-                updateInventory();
+                loadStars(await res.json())
             });
         }
     }, 'save')
@@ -167,6 +167,7 @@ loader.load('stern.glb', function (gltf) {
     advanced.close();
 
     const coloringrules = {
+        1: [model.children.map((child) => child.name)],
         2: [
             ['top', 'bottom', 'topbackleft', 'bottombackleft', 'topbackright', 'bottombackright', 'right', 'left', 'back', 'front', 'topfrontleft', 'bottomfrontleft', 'topfrontright', 'bottomfrontright'],
             ['topright', 'bottomright', 'topleft', 'bottomleft', 'topback', 'bottomback', 'topfront', 'bottomfront', 'backleft', 'backright', 'frontleft', 'frontright'],
@@ -176,27 +177,16 @@ loader.load('stern.glb', function (gltf) {
             ['topright', 'bottomright', 'topleft', 'bottomleft', 'topback', 'bottomback', 'topfront', 'bottomfront', 'backleft', 'backright', 'frontleft', 'frontright'],
             ['topfrontleft', 'bottomfrontleft', 'topfrontright', 'bottomfrontright', 'topbackleft', 'bottombackleft', 'topbackright', 'bottombackright']
         ]
-
     }
 
     function updateColors() {
-        const colorlist = [...Object.entries(params).filter(entry => entry[0].startsWith('color')).map(entry => entry[1])].filter((color) => color !== '');
+        const colorlist = [...Object.entries(params).filter(entry => entry[0].startsWith('color')).map(entry => entry[1])].filter((color) => color !== 'No Color');
         if (colorlist.length === 0) {
             Object.keys(params.advanced).forEach((key) => {
                 params.advanced[key] = '';
             });
-        } else if (colorlist.length === 1) {
-            Object.keys(params.advanced).forEach((key) => {
-                params.advanced[key] = colorlist[0];
-            });
-        } else if (colorlist.length === 2) {
-            coloringrules[2].forEach((rule, index) => {
-                rule.forEach((part) => {
-                    params.advanced[part] = colorlist[index];
-                });
-            });
-        } else if (colorlist.length === 3) {
-            coloringrules[3].forEach((rule, index) => {
+        } else {
+            coloringrules[colorlist.length].forEach((rule, index) => {
                 rule.forEach((part) => {
                     params.advanced[part] = colorlist[index];
                 });
@@ -220,47 +210,47 @@ loader.load('stern.glb', function (gltf) {
     }
     animate();
 
-    function updateInventory() {
-        fetch('/api').then(res => res.json()).then(stars => {
-            stars.reverse();
-            document.getElementById('inventory').innerHTML = '';
-            stars.forEach((star) => {
-                const div = document.createElement('div');
-                div.className = 'star';
-                const button = document.createElement('button');
-                button.className = 'deletebutton';
-                button.innerText = 'delete';
-                button.addEventListener('click', () => {
-                    fetch('/api/' + star.id, {
-                        method: 'DELETE'
-                    }).then(() => {
-                        updateInventory();
-                    });
+    function loadStars(stars) {
+        stars.reverse();
+        document.getElementById('inventory').innerHTML = '';
+        stars.forEach((star) => {
+            const div = document.createElement('div');
+            div.className = 'star';
+            const button = document.createElement('button');
+            button.className = 'deletebutton';
+            button.innerText = 'delete';
+            button.addEventListener('click', () => {
+                fetch('/api/' + star.id, {
+                    method: 'DELETE'
+                }).then(async (res) => {
+                    loadStars(await res.json());
                 });
-                div.appendChild(button);
-                const img = document.createElement('img');
-                img.src = star.img;
-                div.onclick = () => {
-                    Object.entries(star).forEach((entry) => {
-                        if (entry[0] === 'img') return;
-                        if (entry[0] === 'finder') return;
-                        if (entry[0] === 'advanced') {
-                            Object.entries(entry[1]).forEach((advancedentry) => {
-                                params.advanced[advancedentry[0]] = advancedentry[1];
-                            });
-                        } else {
-                            params[entry[0]] = entry[1];
-                        }
-                    });
-                    drawColors();
-                };
-                div.style.borderColor = star.wishlist ? 'red' : 'white';
-                div.appendChild(img);
-                document.getElementById('inventory').appendChild(div);
             });
+            div.appendChild(button);
+            const img = document.createElement('img');
+            img.src = star.img;
+            div.onclick = () => {
+                Object.entries(star).forEach((entry) => {
+                    if (entry[0] === 'img') return;
+                    if (entry[0] === 'finder') return;
+                    if (entry[0] === 'advanced') {
+                        Object.entries(entry[1]).forEach((advancedentry) => {
+                            params.advanced[advancedentry[0]] = advancedentry[1];
+                        });
+                    } else {
+                        params[entry[0]] = entry[1];
+                    }
+                });
+                drawColors();
+            };
+            div.style.borderColor = star.wishlist ? 'red' : 'white';
+            div.appendChild(img);
+            document.getElementById('inventory').appendChild(div);
         });
     }
-    updateInventory();
+    fetch('/api').then(res => res.json()).then(stars => {
+        loadStars(stars);
+    });
 }, undefined, function (error) {
     console.error(error);
 });
